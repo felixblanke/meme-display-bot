@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, render_template
 import requests
 import uuid
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='photos')
 app.config.from_file("config.json", load=json.load)
 
 @app.route('/webhook', methods=['POST'])
@@ -48,3 +48,11 @@ def webhook_receiver():
         raise ex
 
     return "ok", 200
+
+@app.route("/photos/", methods=["GET"])
+def photos():
+    return [str(p.name) for p in Path(app.config["IM_PATH"]).iterdir()]
+
+@app.route("/", methods=["GET"])
+def meme_page():
+    return render_template("main.html", imgDir=app.config["IM_PATH"] + "/", displayTime=5000)
