@@ -10,20 +10,18 @@ static_folder_name = "photos"
 app = Flask(__name__, static_folder=static_folder_name)
 app.config.from_file("config.json", load=json.load)
 
-@app.route('/webhook', methods=['POST'])
+
+@app.route("/webhook", methods=["POST"])
 def webhook_receiver():
     data = request.json
 
     try:
         if "photo" not in data["message"]:
             return "ok", 200
-        file_request = {
-            "file_id": data["message"]["photo"][-1]["file_id"]
-        }
+        file_request = {"file_id": data["message"]["photo"][-1]["file_id"]}
 
         response = requests.post(
-            f"https://api.telegram.org/bot{app.config['TOKEN']}/getFile",
-            file_request
+            f"https://api.telegram.org/bot{app.config['TOKEN']}/getFile", file_request
         )
         if response.status_code != 200:
             return "ok", 200
@@ -33,7 +31,7 @@ def webhook_receiver():
         if not response["ok"]:
             return "ok", 200
 
-        file_path = response["result"]['file_path']
+        file_path = response["result"]["file_path"]
 
         image_response = requests.get(
             f"https://api.telegram.org/file/bot{app.config['TOKEN']}/{file_path}"
@@ -51,10 +49,16 @@ def webhook_receiver():
 
     return "ok", 200
 
+
 @app.route(f"/{static_folder_name}/", methods=["GET"])
 def photos():
     return [str(p.name) for p in Path(app.static_folder).iterdir()]
 
+
 @app.route("/", methods=["GET"])
 def meme_page():
-    return render_template("main.html", imgDir=Path(app.static_folder).name + "/", displayTime=app.config["DISPLAY_TIME"])
+    return render_template(
+        "main.html",
+        imgDir=Path(app.static_folder).name + "/",
+        displayTime=app.config["DISPLAY_TIME"],
+    )
