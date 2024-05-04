@@ -5,7 +5,9 @@ from flask import Flask, request, render_template
 import requests
 import uuid
 
-app = Flask(__name__, static_folder='photos')
+static_folder_name = "photos"
+
+app = Flask(__name__, static_folder=static_folder_name)
 app.config.from_file("config.json", load=json.load)
 
 @app.route('/webhook', methods=['POST'])
@@ -40,7 +42,7 @@ def webhook_receiver():
         suffix = Path(file_path).suffix
         name = str(uuid.uuid4()) + suffix
 
-        with (Path(app.config["IM_PATH"]) / name).open("wb") as handle:
+        with (Path(app.static_folder) / name).open("wb") as handle:
             for data in image_response.iter_content():
                 handle.write(data)
 
@@ -49,10 +51,10 @@ def webhook_receiver():
 
     return "ok", 200
 
-@app.route("/photos/", methods=["GET"])
+@app.route(f"/{static_folder_name}/", methods=["GET"])
 def photos():
-    return [str(p.name) for p in Path(app.config["IM_PATH"]).iterdir()]
+    return [str(p.name) for p in Path(app.static_folder).iterdir()]
 
 @app.route("/", methods=["GET"])
 def meme_page():
-    return render_template("main.html", imgDir=app.config["IM_PATH"] + "/", displayTime=app.config["DISPLAY_TIME"])
+    return render_template("main.html", imgDir=Path(app.static_folder).name + "/", displayTime=app.config["DISPLAY_TIME"])
