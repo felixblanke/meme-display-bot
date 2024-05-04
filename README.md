@@ -9,8 +9,15 @@ The functionality is simple:
 ### Configuration
 
 First, you need to register [a Telegram bot](https://core.telegram.org/bots) for this purpose.
-Next, clone this repository on your server.
-In the repository directory, create a `config.json` file with the following entries:
+If you want your memes to be displayed at `memes.example.com`, register `memes.example.com/webhook` [as a webhook for your bot](https://core.telegram.org/bots/api#setwebhook), e.g. by sending the following POST request to `https://api.telegram.org/bot<TOKEN>/setWebhook`
+```json
+{
+    "url": "https://memes.example.com/webhook",
+    "allowed_updates": ["message"]
+}
+```
+
+Next, clone this repository on your server and create a `config.json` file in the repository directory with the following entries:
 ```json
 {
     "TOKEN": "YOUR-BOT-TOKEN",
