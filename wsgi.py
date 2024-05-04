@@ -5,14 +5,8 @@ from flask import Flask, request, send_from_directory
 import requests
 import uuid
 
-
-with Path("token.txt").open("r") as handle:
-    token = handle.read().strip()
-
-file_dir = Path("photos")
-
 app = Flask(__name__)
-
+app.config.from_file("config.json", load=json.load)
 
 @app.route('/webhook', methods=['POST'])
 def webhook_receiver():
@@ -26,7 +20,7 @@ def webhook_receiver():
         }
 
         response = requests.post(
-            f"https://api.telegram.org/bot{token}/getFile",
+            f"https://api.telegram.org/bot{app.config['TOKEN']}/getFile",
             file_request
         )
         if response.status_code != 200:
@@ -40,13 +34,13 @@ def webhook_receiver():
         file_path = response["result"]['file_path']
 
         image_response = requests.get(
-            f"https://api.telegram.org/file/bot{token}/{file_path}"
+            f"https://api.telegram.org/file/bot{app.config['TOKEN']}/{file_path}"
         )
 
         suffix = Path(file_path).suffix
         name = str(uuid.uuid4()) + suffix
 
-        with (file_dir / name).open("wb") as handle:
+        with (Path(app.config["IM_PATH"]) / name).open("wb") as handle:
             for data in image_response.iter_content():
                 handle.write(data)
 
