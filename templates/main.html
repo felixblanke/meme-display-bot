@@ -1,0 +1,57 @@
+<!doctype html>
+<head>
+    <meta charset="UTF-8" />
+    <style>
+		body {
+			background-color: black;
+			color: white;
+			margin: 0;
+		}
+		img {
+			width: 100vw;
+			height: 100vh;
+			object-fit: contain;
+		}
+	</style>
+	<script type="module">
+        // SPDX-License-Identifier: GPL-3.0-or-later
+        const imgDir = {{ imgDir|tojson }}; // needs to have nginx `autoindex_format json;`
+        console.log("imgDir:", imgDir);
+
+        const displayTime = {{ displayTime|tojson }}; // time for each image, in milliseconds
+        console.log("display time", displayTime);
+
+        function sleep(millis) {
+            return new Promise((resolve, reject) => setTimeout(resolve, millis));
+        }
+
+        async function loadImage(src) {
+            const img = new Image();
+            img.src = src;
+            await img.decode();
+            return img;
+        }
+
+        let content = document.getElementById("content");
+        let first = true;
+
+        while (true) {
+            const imgs = await fetch(imgDir).then(r => r.json());
+            imgs.sort((a,b) => new Date(b.mtime).getTime() - new Date(a.mtime).getTime());
+            console.log(imgs);
+            for (const img of imgs) {
+                const res = await Promise.all([
+                    loadImage(imgDir + img),
+                    sleep(first ? 0 : displayTime)
+                ])
+                content.replaceWith(res[0]);
+                content = res[0];
+                first = false;
+            }
+        }
+	</script>
+</head>
+
+<body>
+	<p id="content">loading...</p>
+</body>
