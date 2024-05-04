@@ -55,4 +55,4 @@ def photos():
 
 @app.route("/", methods=["GET"])
 def meme_page():
-    return render_template("main.html", imgDir=app.config["IM_PATH"] + "/", displayTime=5000)
+    return render_template("main.html", imgDir=app.config["IM_PATH"] + "/", displayTime=app.config["DISPLAY_TIME"])
